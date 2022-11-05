@@ -30,15 +30,6 @@
  * 
  */
  
-#include <SoftwareSerial.h>
-#include <IRremote.h>
-
-IRrecv controle(8);
-SoftwareSerial blue(2,3);
-
-//Variaveis globais:
-decode_results comandos;
-
 byte const pinR=9;
 byte const pinG=6;
 byte const pinB=5;
@@ -86,12 +77,16 @@ void aumentarVelocidade(){
 
 
 byte receberInt(){
-  char charAtual=blue.read();
+  delay(100);
+  char charAtual=Serial.read();
   String numero="";
   while (charAtual!=' '){
+    delay(100);
     numero+=charAtual;
-    charAtual=blue.read();
+    charAtual=Serial.read();
   }
+
+  Serial.println(numero);
   return numero.toInt();
 }
 
@@ -134,9 +129,10 @@ void btSwitch(){
 }
 
 char lerBluetooth(){
-  char byteRecebido=blue.read();
+  char byteRecebido=Serial.read();
+  Serial.println(byteRecebido);
   if (byteRecebido=='C'){
-    blue.read();
+    Serial.read();
     r=receberInt();
     g=receberInt();
     b=receberInt();
@@ -147,8 +143,8 @@ char lerBluetooth(){
     byteRecebido=processoAtual;
   }
   
-  while(blue.available()){
-    char lixo=blue.read();
+  while(Serial.available()){
+    char lixo=Serial.read();
   }
 
   return byteRecebido;
@@ -165,7 +161,7 @@ void setColor(cor color){
 //Função que fará todas as verificações a todo tempo, para evitar que os comandos no app ou no controle tenham atrasos
 bool verificacoes(){
   //Trecho Bluetooth:
-  if (blue.available()){
+  if (Serial.available()){
     char comando=lerBluetooth();
     if ((comando != 'b') and (comando != 'B') and (comando != 'v') and ( comando != 'V' )  and (comando != processoAtual)){
       if (comando != 'P'){
@@ -203,176 +199,6 @@ bool verificacoes(){
     delay(300);
   }
   
-  //Trecho controle:
-  if(controle.decode()){
-    cor cores[5][3];
-
-    //Coluna 1
-    //Botão 1:
-    cores[0][0].verm=255;
-    //Botão 2:
-    cores[1][0].verm=255;
-    cores[1][0].verd=25;
-    //Botão 3:
-    cores[2][0].verm=255;
-    cores[2][0].verd=60;
-    //Botão 4:
-    cores[3][0].verm=255;
-    cores[3][0].verd=100;
-    //Botão 5:
-    cores[4][0].verm=255;
-    cores[4][0].verd=200;
-
-    //Coluna 2:
-    //Botão 1:
-    cores[0][1].verd=255;
-    //Botão 2:
-    cores[1][1].verd=255;
-    cores[1][1].azul=75;
-    //Botão 3:
-    cores[2][1].verd=255;
-    cores[2][1].azul=255;
-    //Botão 4:
-    cores[3][1].verd=140;
-    cores[3][1].azul=255;
-    //Botão 5:
-    cores[4][1].verd=50;
-    cores[4][1].azul=255;
-
-    //Coluna 3:
-    //Botão 1:
-    cores[0][2].azul=255;
-    //Botão 2:
-    cores[1][2].azul=255;
-    cores[1][2].verm=35;
-    //Botão 3:
-    cores[2][2].azul=255;
-    cores[2][2].verm=90;
-    //Botão 4:
-    cores[3][2].azul=200;
-    cores[3][2].verm=120;
-    //Botão 5:
-    cores[4][2].azul=100;
-    cores[4][2].verm=255;
-
-
-    //Branco:
-    cor branco;
-    branco.verm=255;
-    branco.verd=255;
-    branco.azul=255;
-    
-    char comando=processoAtual;
-    
-    //Ifs com os codigos dos botões:
-    if(comandos.value==0xE85952E1 or comandos.value==0xF720DF){
-      setColor(cores[0][0]);
-      comando='C';
-    }
-    else if (comandos.value==0xD3FD9A81 or comandos.value==0xF710EF){
-      setColor(cores[1][0]);
-      comando='C';
-    }
-    else if (comandos.value==0x84044BBD or comandos.value==0xF730CF){
-      setColor(cores[2][0]);
-      comando='C';
-    }
-    else if (comandos.value==0xB0F9B3E1 or comandos.value==0xF708F7){
-      setColor(cores[3][0]);
-      comando='C';
-    }
-    else if (comandos.value==0x9DE75E1D or comandos.value==0xF728D7){
-      setColor(cores[4][0]);
-      comando='C';
-    }
-    else if (comandos.value==0x78CDA4DC or comandos.value==0x78CDA4DD or comandos.value==0xF7A05F){
-      setColor(cores[0][1]);
-      comando='C';
-    }
-    else if (comandos.value==0x6471EC7D or comandos.value==0xF7906F){
-      setColor(cores[1][1]);
-      comando='C';
-    }
-    else if (comandos.value==0x14789DB9 or comandos.value==0xF7B04F){
-      setColor(cores[2][1]);
-      comando='C';
-    }
-    else if (comandos.value==0x416E05DD or comandos.value==0xF78877){
-      setColor(cores[3][1]);
-      comando='C';
-    }
-    else if (comandos.value==0xF794B621 or comandos.value==0xF7A857){
-      setColor(cores[4][1]);
-      comando='C';
-    }
-    else if (comandos.value==0xA2672345 or comandos.value==0xF7609F){
-      setColor(cores[0][2]);
-      comando='C';
-    }
-    else if (comandos.value==0x9D52009D or comandos.value==0xF750AF){
-      setColor(cores[1][2]);
-      comando='C';
-    }
-    else if (comandos.value==0x3E121C21 or comandos.value==0xF7708F){
-      setColor(cores[2][2]);
-      comando='C';
-    }
-    else if (comandos.value==0x6A844445 or comandos.value==0xF748B7){
-      setColor(cores[3][2]);
-      comando='C';
-    }
-    else if (comandos.value==0x57F52E81 or comandos.value==0xF76897){
-      setColor(cores[4][2]);
-      comando='C';
-    }
-    else if (comandos.value==0x9BA392C1 or comandos.value==0xF7E01F){
-      setColor(branco);
-      comando='C';
-    }
-    
-    //Comandos:
-    else if (comandos.value==0x8503705D or comandos.value==0xF700FF){
-      aumentarBrilho();
-    }
-    else if(comandos.value==0xDEB0C861 or comandos.value==0xF7807F){
-      diminuirBrilho();
-    }
-    else if(comandos.value==0xD4DD0381 or comandos.value==0xF740BF){
-      standby=true;
-      delay(60);
-      controle.resume();
-      return true;
-    }
-    else if(comandos.value==0xCE1972FD or comandos.value==0xF7C03F){
-      if (standby){
-        standby=false;
-      }
-    }
-    else if(comandos.value==0xDCC45BE1 or comandos.value==0xF7D02F){//FLASH
-      comando='F';
-    }
-    else if(comandos.value==0x374E8B9D or comandos.value==0xF7F00F){//STROBE
-      comando='S';
-    }
-    else if(comandos.value==0xB9C07541 or comandos.value==0xF7C837){//FADE / ESCURECER switch
-      if (processoAtual=='f'){
-        comando='e';
-      }
-      else{
-        comando='f';
-      }
-    }
-    else if(comandos.value==0xA7315F7D or comandos.value==0xF7E817){//SMOOTH
-      comando='s';
-    }    
-    delay(60);
-    controle.resume();
-
-    if (comando!=processoAtual){
-      processoAtual=comando;
-      return true;
-    }
-  }
   return false;
 }
 
@@ -867,8 +693,8 @@ void desligar(){
 }
 
 void setup(){
-  controle.enableIRIn();
-  blue.begin(38400);
+  // controle.enableIRIn();
+  Serial.begin(2000000);
   processoAtual='C';
   pinMode(7,INPUT);
   pinMode(pinR,OUTPUT);
